@@ -4,152 +4,250 @@
 
 struct Hero {
     char nom;
-    int vie = 5;
-    int pos_x;
-    int pos_y;
+    int position_x;
+    int position_y;
+    int vies;
+    char direction;
 };
 
-struct Ennemies {
+struct Enemy {
     char nom;
-    int pos_x;
-    int pos_y;
+    int position_x;
+    int position_y;
+    bool vivant;
 };
-
 
 int main() {
     bool game = true;
 
+    //taille map
     const int map_size_x = 20;
     const int map_size_y = 10;
+    const int enemy_count = 5;
 
-    Hero H{ 'H', 0, 0 };
+    //type terrain
+    const int ground = 0;
+    const int mountain = 1;
+    const int water = 2;
 
 
+    Hero H{ 'H', 10, 0, 3, 'd' };
 
-    char map[map_size_x * map_size_y];
 
+    int map[map_size_x * map_size_y] = {};
 
+    // map initialisé avec "ground"
     for (int i = 0; i < map_size_x * map_size_y; i++) {
-        map[i] = '.';
+        map[i] = ground;
     }
 
+    //mountain
+    for (int x = 0; x < 5; x++) {
+        for (int y = 1; y < 3; y++) {
+            map[y * map_size_x + x] = mountain;
+        }
+    }
 
-    map[6 + 2 * map_size_x] = '~';
-    map[7 + 2 * map_size_x] = '~';
-    map[5 + 2 * map_size_x] = '~';
+    
+    for (int x = 2; x < 6; x++) {
+        for (int y = 2; y < 7; y++) {
+            map[y * map_size_x + x] = mountain;
+        }
+    }
 
-    map[9 + 4 * map_size_x] = '~';
-    map[10 + 4 * map_size_x] = '~';
+    for (int x = 12; x < 18; x++) {
+        for (int y = 6; y < 7; y++) {
+            map[y * map_size_x + x] = mountain;
+        }
+    }
 
-    map[5 + 4 * map_size_x] = '~';
-    map[6 + 4 * map_size_x] = '~';
-    map[7+ 4 * map_size_x] = '~';
-    map[8 + 4 * map_size_x] = '~';
+    //water
+    for (int x = 2; x < 5; x++) {
+        for (int y = 6; y < 9; y++) {
+            map[y * map_size_x + x] = water;
+        }
+    }
 
+    for (int x = 10; x < 13; x++) {
+        for (int y = 4; y < 6; y++) {
+            map[y * map_size_x + x] = water;
+        }
+    }
 
-    map[3 + 1 * map_size_x] = 'A';
-    map[3 + 2 * map_size_x] = 'A';
-    map[3 + 3 * map_size_x] = 'A';
+    
 
-    map[15 + 6 * map_size_x] = 'A';
-    map[16 + 6 * map_size_x] = 'A';
-    map[17 + 6 * map_size_x] = 'A';
-    map[18 + 6 * map_size_x] = 'A';
+    Enemy enemies[enemy_count] = {
+        { 'X', 6, 2, true },
+        { 'X', 12, 2, true },
+        { 'X', 11, 6, true },
+        { 'X', 8, 8, true },
+        { 'X', 16, 8, true }
+    };
 
-    map[18 + 6 * map_size_x] = 'x';
-    map[18 + 6 * map_size_x] = 'x';
-
-
+    //boucle principale
     while (game) {
-
 
         system("cls");
 
+        for (int y = 0; y < map_size_y; y++) {
+            for (int x = 0; x < map_size_x; x++) {
 
-        for (int j = 0; j < map_size_y; j++) {
-            for (int i = 0; i < map_size_x; i++) {
+                if (x == H.position_x &&
+                    y == H.position_y) {
 
-                if (i == H.pos_x && j == H.pos_y) {
                     std::cout << H.nom << ' ';
                 }
                 else {
-                    std::cout << map[i + j * map_size_x] << ' ';
+                    bool enemy_found = false;
+
+                    for (int i = 0; i < enemy_count; i++) {
+                        if (enemies[i].vivant &&
+                            x == enemies[i].position_x &&
+                            y == enemies[i].position_y) {
+
+                            std::cout << enemies[i].nom << ' ';
+                            enemy_found = true;
+                            break;
+                        }
+                    }
+
+
+                    if (!enemy_found) {
+                        int terrain = map[y * map_size_x + x];
+
+                        if (terrain == ground) {
+                            std::cout << ". ";
+                        }
+                        else if (terrain == mountain) {
+                            std::cout << "A ";
+                        }
+                        else if (terrain == water) 
+                        {
+                            std::cout << "~ ";
+                        }
+                    }
                 }
             }
+
             std::cout << '\n';
         }
 
-        std::cout << "\nZ = Haut | S = Bas"
-            << "\nQ = Gauche | D = Droite"
-            << "\nX = Quitter\n";
+        //hud
+        int ennemis_restants = 0;
 
+        for (int i = 0; i < enemy_count; i++) {
+            if (enemies[i].vivant) {
+                ennemis_restants++;
+            }
+        }
 
-        char direction = _getch();
+        std::cout << "\nVies : " << H.vies << '\n';
+        std::cout << "Ennemis restants : "
+            << ennemis_restants << '\n';
 
+        std::cout << "\nZ = Haut | S = Bas\n";
+        std::cout << "Q = Gauche | D = Droite\n";
+        std::cout << "Echap = Quitter\n";
 
-        if (direction >= 'A' && direction <= 'Z') {
-            direction = direction + ('a' - 'A');
+        //actualisation apres touche
+        char touche = _getch();
+
+        // echap pour quitter
+        if (touche == 27) {
+            break;
         }
 
 
-        if (direction == 'x') {
-            game = false;
+        if (touche >= 'A' && touche <= 'Z') {
+            touche = touche + ('a' - 'A');
+        }
+
+        //prochaine position
+        int pos_x = H.position_x;
+        int pos_y = H.position_y;
+
+        bool action_valide = false;
+
+        if (touche == 'z' || touche == 'q' ||
+            touche == 's' || touche == 'd') {
+
+            action_valide = true;
+
+            if (touche == 'z') {
+                pos_y--;
+            }
+            else if (touche == 's') {
+                pos_y++;
+            }
+            else if (touche == 'q') {
+                pos_x--;
+            }
+            else if (touche == 'd') {
+                pos_x++;
+            }
+
+
+
+            if (pos_x < 0 || pos_x >= map_size_x ||
+                pos_y < 0 || pos_y >= map_size_y) {
+                continue;
+            }
+
+            int pos_index = pos_y * map_size_x + pos_x;
+
+
+            if (map[pos_index] != mountain &&
+                map[pos_index] != water) {
+
+                H.position_x = pos_x;
+                H.position_y = pos_y;
+            }
+
+
+            for (int i = 0; i < enemy_count; i++) {
+
+                if (enemies[i].vivant &&
+                    H.position_x == enemies[i].position_x &&
+                    H.position_y == enemies[i].position_y) {
+
+                    H.vies--;
+
+                    if (H.vies < 0) {
+                        H.vies = 0;
+                    }
+
+                    if (H.vies <= 0) {
+                        game = false;
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        //ignore touche non reconnu
+        if (!action_valide) {
             continue;
         }
 
-
-        int next_x = H.pos_x;
-        int next_y = H.pos_y;
-
-        if (direction == 'z') {
-            next_y--;
+        //verif nombrre de vie
+        if (!game) {
+            break;
         }
-        else if (direction == 's') {
-            next_y++;
-        }
-        else if (direction == 'q') {
-            next_x--;
-        }
-        else if (direction == 'd') {
-            next_x++;
-        }
-        else {
-            continue;
-        }
-
-
-        next_x = (next_x + map_size_x) % map_size_x;
-        next_y = (next_y + map_size_y) % map_size_y;
-
-
-        int next_index = next_x + next_y * map_size_x;
-
-        if (map[next_index] == '~') {
-
-            continue;
-        }
-
-        if (map[next_index] == 'A') {
-
-            continue;
-        }
-        if (map[next_index] == 'x') {
-            
-            H.vie -= 1;
-
-            if (H.vie == 0)
-            {
-                game = false;
-           }
-        }
-
-
-        H.pos_x = next_x;
-        H.pos_y = next_y;
     }
 
-    system("cls");
-    std::cout << "Fin du jeu !\n";
+
+    if (H.vies <= 0) {
+        system("cls");
+
+        std::cout << "       GAME OVER        \n";
+
+        std::cout << "Le heros a perdu toutes ses vies !\n";
+        std::cout << "Vies restantes : " << H.vies << '\n';
+    }
+
+    std::cout << "\nAppuie sur une touche pour fermer...";
 
     return 0;
 }
+
