@@ -1,80 +1,259 @@
+
 #include <iostream>
 #include <conio.h>
 #include <cstdlib>
 
+//CONSTANTES
+const int map_size_x = 20;
+const int map_size_y = 10;
+const int enemy_count = 5;
+
+const int GROUND = 0;
+const int MOUNTAIN = 1;
+const int WATER = 2;
+
+//STRUCTURES
 struct Hero {
     char nom;
-    int position_x;
-    int position_y;
-    int vies;
+    int pos_x;
+    int pos_y;
+    int life;
     char direction;
 };
 
 struct Enemy {
     char nom;
-    int position_x;
-    int position_y;
+    int pos_x;
+    int pos_y;
     bool vivant;
 };
 
-int main() {
-    bool game = true;
+struct Finish {
+    char nom;
+    int pos_x;
+    int pos_y;
+};
 
-    //taille map
-    const int map_size_x = 20;
-    const int map_size_y = 10;
-    const int enemy_count = 5;
+//INITIALISATION
+void initialiserCarte(int map[]) {
 
-    //type terrain
-    const int ground = 0;
-    const int mountain = 1;
-    const int water = 2;
-
-
-    Hero H{ 'H', 10, 0, 3, 'd' };
-
-
-    int map[map_size_x * map_size_y] = {};
-
-    // map initialisé avec "ground"
+    //Terrain par défaut
     for (int i = 0; i < map_size_x * map_size_y; i++) {
-        map[i] = ground;
+        map[i] = GROUND;
     }
 
-    //mountain
+    //Montagnes
     for (int x = 0; x < 5; x++) {
         for (int y = 1; y < 3; y++) {
-            map[y * map_size_x + x] = mountain;
+            map[y * map_size_x + x] = MOUNTAIN;
         }
     }
 
-    
     for (int x = 2; x < 6; x++) {
         for (int y = 2; y < 7; y++) {
-            map[y * map_size_x + x] = mountain;
+            map[y * map_size_x + x] = MOUNTAIN;
         }
     }
 
     for (int x = 12; x < 18; x++) {
         for (int y = 6; y < 7; y++) {
-            map[y * map_size_x + x] = mountain;
+            map[y * map_size_x + x] = MOUNTAIN;
         }
     }
 
-    //water
+    //Eau
     for (int x = 2; x < 5; x++) {
         for (int y = 6; y < 9; y++) {
-            map[y * map_size_x + x] = water;
+            map[y * map_size_x + x] = WATER;
         }
     }
 
     for (int x = 10; x < 13; x++) {
         for (int y = 4; y < 6; y++) {
-            map[y * map_size_x + x] = water;
+            map[y * map_size_x + x] = WATER;
+        }
+    }
+}
+
+//AFFICHAGE
+void afficherCarte(
+    const int map[],
+    const Hero& H,
+    const Finish& E,
+    const Enemy enemies[]
+) {
+    for (int y = 0; y < map_size_y; y++) {
+        for (int x = 0; x < map_size_x; x++) {
+
+            //Héros
+            if (x == H.pos_x && y == H.pos_y) {
+                std::cout << H.nom << ' ';
+            }
+
+            //Arrivée
+            else if (x == E.pos_x && y == E.pos_y) {
+                std::cout << E.nom << ' ';
+            }
+
+            else {
+                bool enemy_found = false;
+
+                //Ennemis
+                for (int i = 0; i < enemy_count; i++) {
+                    if (enemies[i].vivant &&
+                        x == enemies[i].pos_x &&
+                        y == enemies[i].pos_y) {
+
+                        std::cout << enemies[i].nom << ' ';
+                        enemy_found = true;
+                        break;
+                    }
+                }
+
+                //Terrain
+                if (!enemy_found) {
+                    int terrain = map[y * map_size_x + x];
+
+                    if (terrain == GROUND) {
+                        std::cout << ". ";
+                    }
+                    else if (terrain == MOUNTAIN) {
+                        std::cout << "A ";
+                    }
+                    else if (terrain == WATER) {
+                        std::cout << "~ ";
+                    }
+                }
+            }
+        }
+
+        std::cout << '\n';
+    }
+}
+
+
+int compterEnnemisVivants(const Enemy enemies[]) {
+    int compteur = 0;
+
+    for (int i = 0; i < enemy_count; i++) {
+        if (enemies[i].vivant) {
+            compteur++;
         }
     }
 
-    
+    return compteur;
+}
+
+void afficherHUD(const Hero& H, const Enemy enemies[]) {
+    std::cout << "\nVies : " << H.life << '\n';
+
+    std::cout << "Ennemis restants : "
+        << compterEnnemisVivants(enemies) << '\n';
+
+    std::cout << "\nZ = Haut | S = Bas\n";
+    std::cout << "Q = Gauche | D = Droite\n";
+    std::cout << "Echap = Quitter\n";
+}
+
+//DEPLACEMENT
+bool estDansLaCarte(int x, int y) {
+    return x >= 0 && x < map_size_x &&
+        y >= 0 && y < map_size_y;
+}
+
+bool terrainAccessible(const int map[], int x, int y) {
+    int index = y * map_size_x + x;
+
+    return map[index] != MOUNTAIN &&
+        map[index] != WATER;
+}
+
+void deplacerHero(Hero& H, const int map[], char touche) {
+
+    int pos_x = H.pos_x;
+    int pos_y = H.pos_y;
+
+    //Déterminer la nouvelle position
+    if (touche == 'z') {
+        pos_y--;
+    }
+    else if (touche == 's') {
+        pos_y++;
+    }
+    else if (touche == 'q') {
+        pos_x--;
+    }
+    else if (touche == 'd') {
+        pos_x++;
+    }
+    else {
+        return;
+    }
+
+    //Vérifier les limites
+    if (!estDansLaCarte(pos_x, pos_y)) {
+        return;
+    }
+
+    //Vérifier le terrain
+    if (!terrainAccessible(map, pos_x, pos_y)) {
+        return;
+    }
+
+    //Valider le déplacement
+    H.pos_x = pos_x;
+    H.pos_y = pos_y;
+}
+
+bool collisionEnnemi(const Hero& H, const Enemy enemies[]) {
+    for (int i = 0; i < enemy_count; i++) {
+        if (enemies[i].vivant &&
+            H.pos_x == enemies[i].pos_x &&
+            H.pos_y == enemies[i].pos_y) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void gererCollision(Hero& H, const Enemy enemies[]) {
+    if (collisionEnnemi(H, enemies)) {
+        H.life--;
+
+        if (H.life < 0) {
+            H.life = 0;
+        }
+    }
+}
+
+//FIN DE PARTIE
+void afficherGameOver(const Hero& H) {
+     
+    std::cout << "       GAME OVER        \n";
+    std::cout << "Le heros a perdu toutes ses vies !\n";
+    std::cout << "life restantes : " << H.life << '\n';
+}
+void afficherGameFinish(Hero& H) {
+    system("cls");
+    if
+
+
+    std::cout << "       FINISH        \n";
+    std::cout << "Le heros a perdu toutes ses vies !\n";
+    std::cout << "life restantes : " << H.life << '\n';
+}
+
+//PROGRAMME PRINCIPAL
+int main() {
+
+    bool game = true;
+
+    Hero H{ 'H', 10, 0, 3, 'd' };
+    Finish F{ 'F', 19, 9 };
+
+    int map[map_size_x * map_size_y];
+    initialiserCarte(map);
 
     Enemy enemies[enemy_count] = {
         { 'X', 6, 2, true },
@@ -84,170 +263,46 @@ int main() {
         { 'X', 16, 8, true }
     };
 
-    //boucle principale
     while (game) {
 
         system("cls");
 
-        for (int y = 0; y < map_size_y; y++) {
-            for (int x = 0; x < map_size_x; x++) {
+        afficherCarte(map, H, F, enemies);
+        afficherHUD(H, enemies);
 
-                if (x == H.position_x &&
-                    y == H.position_y) {
-
-                    std::cout << H.nom << ' ';
-                }
-                else {
-                    bool enemy_found = false;
-
-                    for (int i = 0; i < enemy_count; i++) {
-                        if (enemies[i].vivant &&
-                            x == enemies[i].position_x &&
-                            y == enemies[i].position_y) {
-
-                            std::cout << enemies[i].nom << ' ';
-                            enemy_found = true;
-                            break;
-                        }
-                    }
-
-
-                    if (!enemy_found) {
-                        int terrain = map[y * map_size_x + x];
-
-                        if (terrain == ground) {
-                            std::cout << ". ";
-                        }
-                        else if (terrain == mountain) {
-                            std::cout << "A ";
-                        }
-                        else if (terrain == water) 
-                        {
-                            std::cout << "~ ";
-                        }
-                    }
-                }
-            }
-
-            std::cout << '\n';
-        }
-
-        //hud
-        int ennemis_restants = 0;
-
-        for (int i = 0; i < enemy_count; i++) {
-            if (enemies[i].vivant) {
-                ennemis_restants++;
-            }
-        }
-
-        std::cout << "\nVies : " << H.vies << '\n';
-        std::cout << "Ennemis restants : "
-            << ennemis_restants << '\n';
-
-        std::cout << "\nZ = Haut | S = Bas\n";
-        std::cout << "Q = Gauche | D = Droite\n";
-        std::cout << "Echap = Quitter\n";
-
-        //actualisation apres touche
+        //Attendre une touche
         char touche = _getch();
 
-        // echap pour quitter
+        //Quitter avec Echap
         if (touche == 27) {
             break;
         }
 
-
+        //Convertir les majuscules en minuscules
         if (touche >= 'A' && touche <= 'Z') {
-            touche = touche + ('a' - 'A');
+            touche += 'a' - 'A';
         }
 
-        //prochaine position
-        int pos_x = H.position_x;
-        int pos_y = H.position_y;
-
-        bool action_valide = false;
-
-        if (touche == 'z' || touche == 'q' ||
-            touche == 's' || touche == 'd') {
-
-            action_valide = true;
-
-            if (touche == 'z') {
-                pos_y--;
-            }
-            else if (touche == 's') {
-                pos_y++;
-            }
-            else if (touche == 'q') {
-                pos_x--;
-            }
-            else if (touche == 'd') {
-                pos_x++;
-            }
-
-
-
-            if (pos_x < 0 || pos_x >= map_size_x ||
-                pos_y < 0 || pos_y >= map_size_y) {
-                continue;
-            }
-
-            int pos_index = pos_y * map_size_x + pos_x;
-
-
-            if (map[pos_index] != mountain &&
-                map[pos_index] != water) {
-
-                H.position_x = pos_x;
-                H.position_y = pos_y;
-            }
-
-
-            for (int i = 0; i < enemy_count; i++) {
-
-                if (enemies[i].vivant &&
-                    H.position_x == enemies[i].position_x &&
-                    H.position_y == enemies[i].position_y) {
-
-                    H.vies--;
-
-                    if (H.vies < 0) {
-                        H.vies = 0;
-                    }
-
-                    if (H.vies <= 0) {
-                        game = false;
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        //ignore touche non reconnu
-        if (!action_valide) {
+        //Ignorer les touches non reconnues
+        if (touche != 'z' && touche != 'q' &&
+            touche != 's' && touche != 'd') {
             continue;
         }
 
-        //verif nombrre de vie
-        if (!game) {
-            break;
+        deplacerHero(H, map, touche);
+        gererCollision(H, enemies);
+
+        if (H.life <= 0) {
+            game = false;
         }
     }
 
-
-    if (H.vies <= 0) {
-        system("cls");
-
-        std::cout << "       GAME OVER        \n";
-
-        std::cout << "Le heros a perdu toutes ses vies !\n";
-        std::cout << "Vies restantes : " << H.vies << '\n';
+    if (H.life <= 0) {
+        afficherGameOver(H);
     }
 
     std::cout << "\nAppuie sur une touche pour fermer...";
+    _getch();
 
     return 0;
 }
-
