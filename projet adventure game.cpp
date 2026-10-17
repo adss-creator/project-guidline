@@ -235,6 +235,42 @@ void afficherGameOver(const Hero& H) {
     std::cout << "life restantes : " << H.life << '\n';
 }
 
+void deplacerEnnemi(Enemy& E) {
+
+    int pos_x = E.pos_x;
+    int pos_y = E.pos_y;
+
+	//deplacement aleatoire
+    int direction = rand() % 4;
+
+    if (direction == 0) {
+        pos_y--; 
+    }
+    else if (direction == 1) {
+        pos_y++; 
+    }
+    else if (direction == 2) {
+        pos_x--;
+    }
+    else {
+        pos_x++; 
+    }
+
+	//ennemi ne peut pas sortir de la carte
+    if (!estDansLaCarte(pos_x, pos_y)) {
+        return;
+    }
+
+    if (!terrainAccessible) {
+        return;
+    }
+
+    //deplacement valide
+    E.pos_x = pos_x;
+    E.pos_y = pos_y;
+}
+
+
 
 //PROGRAMME PRINCIPAL
 int main() {
@@ -270,7 +306,7 @@ int main() {
             break;
         }
 
-        //Convertir les majuscules en minuscules
+        //Convertir les majuscules
         if (touche >= 'A' && touche <= 'Z') {
             touche += 'a' - 'A';
         }
@@ -282,6 +318,16 @@ int main() {
         }
 
         deplacerHero(H, map, touche);
+
+        // Deplacer les ennemis vivants
+        for (int i = 0; i < enemy_count; i++) {
+            if (enemies[i].vivant) {
+                deplacerEnnemi(enemies[i]);
+            }
+
+        }
+
+
         gererCollision(H, enemies);
 
         if (H.life <= 0) {
@@ -294,7 +340,6 @@ int main() {
     }
 
     std::cout << "\nAppuie sur une touche pour fermer...";
-    _getch();
 
     return 0;
 }
