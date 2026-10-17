@@ -235,7 +235,15 @@ void afficherGameOver(const Hero& H) {
     std::cout << "life restantes : " << H.life << '\n';
 }
 
-void deplacerEnnemi(Enemy& E) {
+void afficherVictoire() {
+    system("cls");
+
+    std::cout << "       VICTOIRE !           \n";
+    std::cout << "Bravo ! Tu as atteint la fin !\n";
+
+}
+
+void deplacerEnnemi(Enemy& E, const int map[]) {
 
     int pos_x = E.pos_x;
     int pos_y = E.pos_y;
@@ -261,7 +269,7 @@ void deplacerEnnemi(Enemy& E) {
         return;
     }
 
-    if (!terrainAccessible) {
+    if (!terrainAccessible(map, pos_x, pos_y)) {
         return;
     }
 
@@ -301,11 +309,6 @@ int main() {
         //Attendre une touche
         char touche = _getch();
 
-        //Quitter avec Echap
-        if (touche == 27) {
-            break;
-        }
-
         //Convertir les majuscules
         if (touche >= 'A' && touche <= 'Z') {
             touche += 'a' - 'A';
@@ -319,25 +322,31 @@ int main() {
 
         deplacerHero(H, map, touche);
 
-        // Deplacer les ennemis vivants
+        //Deplacer les ennemis vivants
         for (int i = 0; i < enemy_count; i++) {
             if (enemies[i].vivant) {
-                deplacerEnnemi(enemies[i]);
+                deplacerEnnemi(enemies[i], map);
             }
 
         }
 
+        //Verifier si le heros atteint la fin
+        if (H.pos_x == F.pos_x && H.pos_y == F.pos_y) {
+            game = false;
+            break;
+        }
 
         gererCollision(H, enemies);
 
         if (H.life <= 0) {
             game = false;
         }
+        else if (H.pos_x == F.pos_x && H.pos_y == F.pos_y) {
+            afficherVictoire();
+        }
     }
 
-    if (H.life <= 0) {
-        afficherGameOver(H);
-    }
+    
 
     std::cout << "\nAppuie sur une touche pour fermer...";
 
