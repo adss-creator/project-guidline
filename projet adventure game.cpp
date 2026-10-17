@@ -229,20 +229,12 @@ void gererCollision(Hero& H, const Enemy enemies[]) {
 
 //FIN DE PARTIE
 void afficherGameOver(const Hero& H) {
-     
+
     std::cout << "       GAME OVER        \n";
     std::cout << "Le heros a perdu toutes ses vies !\n";
     std::cout << "life restantes : " << H.life << '\n';
 }
-void afficherGameFinish(Hero& H) {
-    system("cls");
-    if
 
-
-    std::cout << "       FINISH        \n";
-    std::cout << "Le heros a perdu toutes ses vies !\n";
-    std::cout << "life restantes : " << H.life << '\n';
-}
 
 //PROGRAMME PRINCIPAL
 int main() {
