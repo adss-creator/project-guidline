@@ -4,8 +4,8 @@
 #include <cstdlib>
 
 //CONSTANTES
-const int map_size_x = 20;
-const int map_size_y = 10;
+const int Map_size_x = 20;
+const int Map_size_y = 10;
 const int enemy_count = 5;
 
 const int GROUND = 0;
@@ -35,55 +35,69 @@ struct Finish {
 };
 
 //INITIALISATION
-void initialiserCarte(int map[]) {
+void initialiserCarte(int* pMap) {
 
-    //Terrain par défaut
-    for (int i = 0; i < map_size_x * map_size_y; i++) {
-        map[i] = GROUND;
-    }
-
-    //Montagnes
-    for (int x = 0; x < 5; x++) {
-        for (int y = 1; y < 3; y++) {
-            map[y * map_size_x + x] = MOUNTAIN;
+        // Terrain par défaut
+        for (int i = 0; i < Map_size_x * Map_size_y; i++) {
+            pMap[i] = GROUND;
         }
-    }
 
-    for (int x = 2; x < 6; x++) {
-        for (int y = 2; y < 7; y++) {
-            map[y * map_size_x + x] = MOUNTAIN;
+        // Montagnes
+        for (int x = 0; x < 5; x++) {
+            for (int y = 1; y < 3; y++) {
+                pMap[y * Map_size_x + x] = MOUNTAIN;
+            }
         }
-    }
+        for (int x = 10; x < 15; x++) {
+            for (int y = 6; y < 8; y++) {
+                pMap[y * Map_size_x + x] = MOUNTAIN;
+            }
+        }
 
-    for (int x = 12; x < 18; x++) {
-        for (int y = 6; y < 7; y++) {
-            map[y * map_size_x + x] = MOUNTAIN;
+        // Eau
+        for (int x = 2; x < 5; x++) {
+            for (int y = 6; y < 9; y++) {
+                pMap[y * Map_size_x + x] = WATER;
+            }
         }
-    }
 
-    //Eau
-    for (int x = 2; x < 5; x++) {
-        for (int y = 6; y < 9; y++) {
-            map[y * map_size_x + x] = WATER;
-        }
-    }
+}
 
-    for (int x = 10; x < 13; x++) {
-        for (int y = 4; y < 6; y++) {
-            map[y * map_size_x + x] = WATER;
+void initialiserNewLevel(int* pMap) {
+        // Terrain par défaut
+        for (int i = 0; i < Map_size_x * Map_size_y; i++) {
+            pMap[i] = GROUND;
         }
-    }
+
+        // Montagnes
+        for (int x = 6; x < 10; x++) {
+            for (int y = 3; y < 6; y++) {
+                pMap[y * Map_size_x + x] = MOUNTAIN;
+            }
+        }
+        for (int x = 10; x < 15; x++) {
+            for (int y = 6; y < 8; y++) {
+                pMap[y * Map_size_x + x] = MOUNTAIN;
+            }
+        }
+
+        // Eau
+        for (int x = 3; x < 9; x++) {
+            for (int y = 4; y < 7; y++) {
+                pMap[y * Map_size_x + x] = WATER;
+            }
+        }
 }
 
 //AFFICHAGE
 void afficherCarte(
-    const int map[],
+    const int* pMap,
     const Hero& H,
     const Finish& E,
     const Enemy enemies[]
 ) {
-    for (int y = 0; y < map_size_y; y++) {
-        for (int x = 0; x < map_size_x; x++) {
+    for (int y = 0; y < Map_size_y; y++) {
+        for (int x = 0; x < Map_size_x; x++) {
 
             //Héros
             if (x == H.pos_x && y == H.pos_y) {
@@ -112,7 +126,7 @@ void afficherCarte(
 
                 //Terrain
                 if (!enemy_found) {
-                    int terrain = map[y * map_size_x + x];
+                    int terrain = pMap[y * Map_size_x + x];
 
                     if (terrain == GROUND) {
                         std::cout << ". ";
@@ -156,19 +170,19 @@ void afficherHUD(const Hero& H, const Enemy enemies[]) {
 }
 
 //DEPLACEMENT
-bool estDansLaCarte(int x, int y) {
-    return x >= 0 && x < map_size_x &&
-        y >= 0 && y < map_size_y;
+bool estDansLaCarte(const int* pMap, int x, int y) {
+    return x >= 0 && x < Map_size_x &&
+        y >= 0 && y < Map_size_y;
 }
 
-bool terrainAccessible(const int map[], int x, int y) {
-    int index = y * map_size_x + x;
+bool terrainAccessible(const int* pMap, int x, int y) {
+    int index = y * Map_size_x + x;
 
-    return map[index] != MOUNTAIN &&
-        map[index] != WATER;
+    return pMap[index] != MOUNTAIN &&
+        pMap[index] != WATER;
 }
 
-void deplacerHero(Hero& H, const int map[], char touche) {
+void deplacerHero(Hero& H, const int* pMap, char touche) {
 
     int pos_x = H.pos_x;
     int pos_y = H.pos_y;
@@ -191,12 +205,13 @@ void deplacerHero(Hero& H, const int map[], char touche) {
     }
 
     //Vérifier les limites
-    if (!estDansLaCarte(pos_x, pos_y)) {
+    if (!estDansLaCarte(pMap, pos_x, pos_y)) {
         return;
     }
 
+
     //Vérifier le terrain
-    if (!terrainAccessible(map, pos_x, pos_y)) {
+    if (!terrainAccessible(pMap, pos_x, pos_y)) {
         return;
     }
 
@@ -243,33 +258,33 @@ void afficherVictoire() {
 
 }
 
-void deplacerEnnemi(Enemy& E, const int map[]) {
+void deplacerEnnemi(Enemy& E, const int* pMap) {
 
     int pos_x = E.pos_x;
     int pos_y = E.pos_y;
 
-	//deplacement aleatoire
+    //deplacement aleatoire
     int direction = rand() % 4;
 
     if (direction == 0) {
-        pos_y--; 
+        pos_y--;
     }
     else if (direction == 1) {
-        pos_y++; 
+        pos_y++;
     }
     else if (direction == 2) {
         pos_x--;
     }
     else {
-        pos_x++; 
+        pos_x++;
     }
 
-	//ennemi ne peut pas sortir de la carte
-    if (!estDansLaCarte(pos_x, pos_y)) {
+    //ennemi ne peut pas sortir de la carte
+    if (!estDansLaCarte(pMap, pos_x, pos_y)) {
         return;
     }
 
-    if (!terrainAccessible(map, pos_x, pos_y)) {
+    if (!terrainAccessible(pMap, pos_x, pos_y)) {
         return;
     }
 
@@ -282,73 +297,75 @@ void deplacerEnnemi(Enemy& E, const int map[]) {
 
 //PROGRAMME PRINCIPAL
 int main() {
-
+    int niveau = 1;
     bool game = true;
 
     Hero H{ 'H', 10, 0, 3, 'd' };
     Finish F{ 'F', 19, 9 };
 
-    int map[map_size_x * map_size_y];
-    initialiserCarte(map);
+    int Map[Map_size_x * Map_size_y];
+    int* pMap = Map;
 
-    Enemy enemies[enemy_count] = {
-        { 'X', 6, 2, true },
-        { 'X', 12, 2, true },
-        { 'X', 11, 6, true },
-        { 'X', 8, 8, true },
-        { 'X', 16, 8, true }
-    };
+    if (niveau == 1) {
+        initialiserCarte(pMap);
 
-    while (game) {
+        Enemy enemies[enemy_count] = {
+            { 'X', 6, 2, true },
+            { 'X', 12, 2, true },
+            { 'X', 11, 5, true },
+            { 'X', 8, 8, true },
+            { 'X', 16, 8, true }
+        };
 
-        system("cls");
 
-        afficherCarte(map, H, F, enemies);
-        afficherHUD(H, enemies);
+        while (game) {
 
-        //Attendre une touche
-        char touche = _getch();
+            system("cls");
 
-        //Convertir les majuscules
-        if (touche >= 'A' && touche <= 'Z') {
-            touche += 'a' - 'A';
-        }
+            afficherCarte(pMap, H, F, enemies);
+            afficherHUD(H, enemies);
 
-        //Ignorer les touches non reconnues
-        if (touche != 'z' && touche != 'q' &&
-            touche != 's' && touche != 'd') {
-            continue;
-        }
+            //Attendre une touche
+            char touche = _getch();
 
-        deplacerHero(H, map, touche);
-
-        //Deplacer les ennemis vivants
-        for (int i = 0; i < enemy_count; i++) {
-            if (enemies[i].vivant) {
-                deplacerEnnemi(enemies[i], map);
+            //Convertir les majuscules
+            if (touche >= 'A' && touche <= 'Z') {
+                touche += 'a' - 'A';
             }
 
+            //Ignorer les touches non reconnues
+            if (touche != 'z' && touche != 'q' &&
+                touche != 's' && touche != 'd') {
+                continue;
+            }
+
+            deplacerHero(H, Map, touche);
+
+            //Deplacer les ennemis vivants
+            for (int i = 0; i < enemy_count; i++) {
+                if (enemies[i].vivant) {
+                    deplacerEnnemi(enemies[i], Map);
+                }
+
+            }
+
+            gererCollision(H, enemies);
+
+            if (H.life <= 0) {
+                afficherGameOver;
+                break;
+            }
+
+            //Verifier si le heros atteint la fin
+            if (H.pos_x == F.pos_x && H.pos_y == F.pos_y) {
+                niveau += 1;
+                initialiserNewLevel(pMap);
+
+            }
         }
 
-        //Verifier si le heros atteint la fin
-        if (H.pos_x == F.pos_x && H.pos_y == F.pos_y) {
-            game = false;
-            break;
-        }
-
-        gererCollision(H, enemies);
-
-        if (H.life <= 0) {
-            game = false;
-        }
-        else if (H.pos_x == F.pos_x && H.pos_y == F.pos_y) {
-            afficherVictoire();
-        }
+        return 0;
     }
+}
 
     
-
-    std::cout << "\nAppuie sur une touche pour fermer...";
-
-    return 0;
-}
