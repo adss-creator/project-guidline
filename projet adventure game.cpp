@@ -64,6 +64,9 @@ void initialiserCarte(int* pMap) {
 }
 
 void initialiserNewLevel(int* pMap) {
+
+
+    
         // Terrain par défaut
         for (int i = 0; i < Map_size_x * Map_size_y; i++) {
             pMap[i] = GROUND;
@@ -87,6 +90,8 @@ void initialiserNewLevel(int* pMap) {
                 pMap[y * Map_size_x + x] = WATER;
             }
         }
+
+
 }
 
 //AFFICHAGE
@@ -145,7 +150,7 @@ void afficherCarte(
     }
 }
 
-
+//HUD
 int compterEnnemisVivants(const Enemy enemies[]) {
     int compteur = 0;
 
@@ -250,9 +255,8 @@ void afficherGameOver(const Hero& H) {
     std::cout << "life restantes : " << H.life << '\n';
 }
 
-void afficherVictoire() {
+void afficherVictory() {
     system("cls");
-
     std::cout << "       VICTOIRE !           \n";
     std::cout << "Bravo ! Tu as atteint la fin !\n";
 
@@ -310,12 +314,14 @@ int main() {
         initialiserCarte(pMap);
 
         Enemy enemies[enemy_count] = {
+
             { 'X', 6, 2, true },
             { 'X', 12, 2, true },
             { 'X', 11, 5, true },
             { 'X', 8, 8, true },
             { 'X', 16, 8, true }
         };
+
 
 
         while (game) {
@@ -358,14 +364,30 @@ int main() {
 
             //Verifier si le heros atteint la fin
             if (H.pos_x == F.pos_x && H.pos_y == F.pos_y) {
+
                 niveau += 1;
                 initialiserNewLevel(pMap);
 
+            }
+            if (niveau == 2)
+            {
+                H.pos_x = 10;
+                H.pos_y = 0;
+
+                
+
+            }
+            
+            if (H.pos_x == F.pos_x && H.pos_y == F.pos_y)
+            {
+                niveau += 1;
+                afficherVictory();  
             }
         }
 
         return 0;
     }
+    
 }
 
     
