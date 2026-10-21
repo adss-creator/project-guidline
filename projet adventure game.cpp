@@ -37,12 +37,12 @@ struct Finish {
 //INITIALISATION
 void initialiserCarte(int* pMap) {
 
-        // Terrain par défaut
+        //Terrain par défaut
         for (int i = 0; i < Map_size_x * Map_size_y; i++) {
             pMap[i] = GROUND;
         }
 
-        // Montagnes
+        //Montagnes
         for (int x = 0; x < 5; x++) {
             for (int y = 1; y < 3; y++) {
                 pMap[y * Map_size_x + x] = MOUNTAIN;
@@ -54,7 +54,7 @@ void initialiserCarte(int* pMap) {
             }
         }
 
-        // Eau
+        //Eau
         for (int x = 2; x < 5; x++) {
             for (int y = 6; y < 9; y++) {
                 pMap[y * Map_size_x + x] = WATER;
@@ -65,14 +65,12 @@ void initialiserCarte(int* pMap) {
 
 void initialiserNewLevel(int* pMap) {
 
-
-    
-        // Terrain par défaut
+        //Terrain par défaut
         for (int i = 0; i < Map_size_x * Map_size_y; i++) {
             pMap[i] = GROUND;
         }
 
-        // Montagnes
+        //Montagnes
         for (int x = 6; x < 10; x++) {
             for (int y = 3; y < 6; y++) {
                 pMap[y * Map_size_x + x] = MOUNTAIN;
@@ -84,7 +82,7 @@ void initialiserNewLevel(int* pMap) {
             }
         }
 
-        // Eau
+        //Eau
         for (int x = 3; x < 9; x++) {
             for (int y = 4; y < 7; y++) {
                 pMap[y * Map_size_x + x] = WATER;
@@ -151,23 +149,9 @@ void afficherCarte(
 }
 
 //HUD
-int compterEnnemisVivants(const Enemy enemies[]) {
-    int compteur = 0;
-
-    for (int i = 0; i < enemy_count; i++) {
-        if (enemies[i].vivant) {
-            compteur++;
-        }
-    }
-
-    return compteur;
-}
 
 void afficherHUD(const Hero& H, const Enemy enemies[]) {
     std::cout << "\nVies : " << H.life << '\n';
-
-    std::cout << "Ennemis restants : "
-        << compterEnnemisVivants(enemies) << '\n';
 
     std::cout << "\nZ = Haut | S = Bas\n";
     std::cout << "Q = Gauche | D = Droite\n";
@@ -220,7 +204,7 @@ void deplacerHero(Hero& H, const int* pMap, char touche) {
         return;
     }
 
-    //Valider le déplacement
+    //Valider le déplacements
     H.pos_x = pos_x;
     H.pos_y = pos_y;
 }
@@ -248,18 +232,19 @@ void gererCollision(Hero& H, const Enemy enemies[]) {
 }
 
 //FIN DE PARTIE
-void afficherGameOver(const Hero& H) {
+void afficherGameOver() {
 
-    std::cout << "       GAME OVER        \n";
-    std::cout << "Le heros a perdu toutes ses vies !\n";
-    std::cout << "life restantes : " << H.life << '\n';
-}
-
-void afficherVictory() {
     system("cls");
-    std::cout << "       VICTOIRE !           \n";
-    std::cout << "Bravo ! Tu as atteint la fin !\n";
 
+    std::cout << "---------GAME OVER---------\n";
+    std::cout << "Le heros a perdu toutes ses vies !\n";
+}
+void afficherVictory() {
+
+
+    system("cls");
+
+    std::cout << "---------VICTORY---------\n";
 }
 
 void deplacerEnnemi(Enemy& E, const int* pMap) {
@@ -301,6 +286,8 @@ void deplacerEnnemi(Enemy& E, const int* pMap) {
 
 //PROGRAMME PRINCIPAL
 int main() {
+    srand(static_cast<unsigned int>(time(nullptr)));
+
     int niveau = 1;
     bool game = true;
 
@@ -310,84 +297,77 @@ int main() {
     int Map[Map_size_x * Map_size_y];
     int* pMap = Map;
 
-    if (niveau == 1) {
-        initialiserCarte(pMap);
+    Enemy enemies[enemy_count] = {
+        { 'X', 6, 2, true },
+        { 'X', 12, 2, true },
+        { 'X', 11, 5, true },
+        { 'X', 8, 8, true },
+        { 'X', 16, 8, true }
+    };
 
-        Enemy enemies[enemy_count] = {
+    initialiserCarte(pMap);
 
-            { 'X', 6, 2, true },
-            { 'X', 12, 2, true },
-            { 'X', 11, 5, true },
-            { 'X', 8, 8, true },
-            { 'X', 16, 8, true }
-        };
+    while (game) {
+        system("cls");
 
+        afficherCarte(pMap, H, F, enemies);
+        afficherHUD(H, enemies);
 
+        char touche = _getch();
 
-        while (game) {
+        if (touche >= 'A' && touche <= 'Z') {
+            touche += 'a' - 'A';
+        }
 
-            system("cls");
+        if (touche != 'z' && touche != 'q' &&
+            touche != 's' && touche != 'd') {
+            continue;
+        }
 
-            afficherCarte(pMap, H, F, enemies);
-            afficherHUD(H, enemies);
+        deplacerHero(H, pMap, touche);
 
-            //Attendre une touche
-            char touche = _getch();
-
-            //Convertir les majuscules
-            if (touche >= 'A' && touche <= 'Z') {
-                touche += 'a' - 'A';
-            }
-
-            //Ignorer les touches non reconnues
-            if (touche != 'z' && touche != 'q' &&
-                touche != 's' && touche != 'd') {
-                continue;
-            }
-
-            deplacerHero(H, Map, touche);
-
-            //Deplacer les ennemis vivants
-            for (int i = 0; i < enemy_count; i++) {
-                if (enemies[i].vivant) {
-                    deplacerEnnemi(enemies[i], Map);
-                }
-
-            }
-
-            gererCollision(H, enemies);
-
-            if (H.life <= 0) {
-                afficherGameOver;
-                break;
-            }
-
-            //Verifier si le heros atteint la fin
-            if (H.pos_x == F.pos_x && H.pos_y == F.pos_y) {
-
-                niveau += 1;
-                initialiserNewLevel(pMap);
-
-            }
-            if (niveau == 2)
-            {
-                H.pos_x = 10;
-                H.pos_y = 0;
-
-                
-
-            }
-            
-            if (H.pos_x == F.pos_x && H.pos_y == F.pos_y)
-            {
-                niveau += 1;
-                afficherVictory();  
+        for (int i = 0; i < enemy_count; i++) {
+            if (enemies[i].vivant) {
+                deplacerEnnemi(enemies[i], pMap);
             }
         }
 
-        return 0;
-    }
-    
-}
+        gererCollision(H, enemies);
 
+        if (H.life <= 0) {
+            afficherGameOver();
+            game = false;
+        }
+
+        if (H.pos_x == F.pos_x && H.pos_y == F.pos_y) {
+            if (niveau == 1) {
+                niveau += 1;
+                initialiserNewLevel(pMap);
+
+                H.pos_x = 10;
+                H.pos_y = 0;
+
+                enemies[0] = { 'X', 2, 2, true };
+                enemies[1] = { 'X', 16, 1, true };
+                enemies[2] = { 'X', 18, 5, true };
+                enemies[3] = { 'X', 1, 8, true };
+                enemies[4] = { 'X', 16, 8, true };
+
+                F.pos_x = 0;
+                F.pos_y = 9;
+               
+            }
+            else if (niveau == 3) {
+
+                niveau += 1;
+                afficherVictory();
+
+            }
+           
+        }
+    }
+
+    return 0;
+}
     
+
