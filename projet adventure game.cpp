@@ -236,7 +236,13 @@ void afficherGameOver() {
 
     system("cls");
 
+    std::cout << "---------------------------\n";
+    std::cout << "---------------------------\n";
+    std::cout << "---------------------------\n";
     std::cout << "---------GAME OVER---------\n";
+    std::cout << "---------------------------\n";
+    std::cout << "---------------------------\n";
+    std::cout << "---------------------------\n";
     std::cout << "Le heros a perdu toutes ses vies !\n";
 }
 void afficherVictory() {
@@ -244,7 +250,13 @@ void afficherVictory() {
 
     system("cls");
 
+    std::cout << "-------------------------\n";
+    std::cout << "-------------------------\n";
+    std::cout << "-------------------------\n";
     std::cout << "---------VICTORY---------\n";
+    std::cout << "-------------------------\n";
+    std::cout << "-------------------------\n";
+    std::cout << "-------------------------\n";
 }
 
 void deplacerEnnemi(Enemy& E, const int* pMap) {
@@ -339,9 +351,15 @@ int main() {
             game = false;
         }
 
-        if (H.pos_x == F.pos_x && H.pos_y == F.pos_y) {
+
+        if (H.life <= 0) {
+            afficherGameOver();
+            game = false;
+        }
+        else if (H.pos_x == F.pos_x && H.pos_y == F.pos_y) {
             if (niveau == 1) {
-                niveau += 1;
+                niveau++;
+
                 initialiserNewLevel(pMap);
 
                 H.pos_x = 10;
@@ -355,16 +373,13 @@ int main() {
 
                 F.pos_x = 0;
                 F.pos_y = 9;
-
             }
-            else if (niveau == 3) {
-
-                niveau += 1;
+            else if (niveau == 2) {
                 afficherVictory();
-
+                game = false;
             }
-
         }
+
     }
 
     return 0;
