@@ -37,57 +37,57 @@ struct Finish {
 //INITIALISATION
 void initialiserCarte(int* pMap) {
 
-        //Terrain par défaut
-        for (int i = 0; i < Map_size_x * Map_size_y; i++) {
-            pMap[i] = GROUND;
-        }
+    //Terrain par défaut
+    for (int i = 0; i < Map_size_x * Map_size_y; i++) {
+        pMap[i] = GROUND;
+    }
 
-        //Montagnes
-        for (int x = 0; x < 5; x++) {
-            for (int y = 1; y < 3; y++) {
-                pMap[y * Map_size_x + x] = MOUNTAIN;
-            }
+    //Montagnes
+    for (int x = 0; x < 5; x++) {
+        for (int y = 1; y < 3; y++) {
+            pMap[y * Map_size_x + x] = MOUNTAIN;
         }
-        for (int x = 10; x < 15; x++) {
-            for (int y = 6; y < 8; y++) {
-                pMap[y * Map_size_x + x] = MOUNTAIN;
-            }
+    }
+    for (int x = 10; x < 15; x++) {
+        for (int y = 6; y < 8; y++) {
+            pMap[y * Map_size_x + x] = MOUNTAIN;
         }
+    }
 
-        //Eau
-        for (int x = 2; x < 5; x++) {
-            for (int y = 6; y < 9; y++) {
-                pMap[y * Map_size_x + x] = WATER;
-            }
+    //Eau
+    for (int x = 2; x < 5; x++) {
+        for (int y = 6; y < 9; y++) {
+            pMap[y * Map_size_x + x] = WATER;
         }
+    }
 
 }
 
 void initialiserNewLevel(int* pMap) {
 
-        //Terrain par défaut
-        for (int i = 0; i < Map_size_x * Map_size_y; i++) {
-            pMap[i] = GROUND;
-        }
+    //Terrain par défaut
+    for (int i = 0; i < Map_size_x * Map_size_y; i++) {
+        pMap[i] = GROUND;
+    }
 
-        //Montagnes
-        for (int x = 6; x < 10; x++) {
-            for (int y = 3; y < 6; y++) {
-                pMap[y * Map_size_x + x] = MOUNTAIN;
-            }
+    //Montagnes
+    for (int x = 6; x < 10; x++) {
+        for (int y = 3; y < 6; y++) {
+            pMap[y * Map_size_x + x] = MOUNTAIN;
         }
-        for (int x = 10; x < 15; x++) {
-            for (int y = 6; y < 8; y++) {
-                pMap[y * Map_size_x + x] = MOUNTAIN;
-            }
+    }
+    for (int x = 10; x < 15; x++) {
+        for (int y = 6; y < 8; y++) {
+            pMap[y * Map_size_x + x] = MOUNTAIN;
         }
+    }
 
-        //Eau
-        for (int x = 3; x < 9; x++) {
-            for (int y = 4; y < 7; y++) {
-                pMap[y * Map_size_x + x] = WATER;
-            }
+    //Eau
+    for (int x = 3; x < 9; x++) {
+        for (int y = 4; y < 7; y++) {
+            pMap[y * Map_size_x + x] = WATER;
         }
+    }
 
 
 }
@@ -355,7 +355,7 @@ int main() {
 
                 F.pos_x = 0;
                 F.pos_y = 9;
-               
+
             }
             else if (niveau == 3) {
 
@@ -363,11 +363,9 @@ int main() {
                 afficherVictory();
 
             }
-           
+
         }
     }
 
     return 0;
 }
-    
-
